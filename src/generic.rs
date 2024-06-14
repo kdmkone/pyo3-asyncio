@@ -304,6 +304,10 @@ where
     F: Future<Output = PyResult<T>> + Send + 'static,
     T: Send + Sync + 'static,
 {
+
+    let code = format!("import signal; signal.signal(signal.SIGINT, lambda signum, frame: print('SIGINT received, ignoring'))");
+    py.run_bound(&code, None, None)?;
+
     let event_loop = asyncio(py)?.call_method0("new_event_loop")?;
 
     let result = run_until_complete::<R, F, T>(event_loop.clone(), fut);
