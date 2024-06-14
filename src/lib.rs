@@ -403,6 +403,7 @@ use pyo3::{
     types::{PyDict, PyTuple},
 };
 
+static SIGNALS: OnceCell<PyObject> = OnceCell::new();
 static ASYNCIO: OnceCell<PyObject> = OnceCell::new();
 static CONTEXTVARS: OnceCell<PyObject> = OnceCell::new();
 static ENSURE_FUTURE: OnceCell<PyObject> = OnceCell::new();
@@ -438,6 +439,12 @@ fn close(event_loop: Bound<PyAny>) -> PyResult<()> {
     event_loop.call_method0("close")?;
 
     Ok(())
+}
+
+fn signals(py: Python) -> PyResult<Bound<PyAny>> {
+    SIGNALS
+        .get_or_try_init(|| Ok(py.import_bound("signal")?.into()))
+        .map(|signals| signals.clone().into_bound(py))
 }
 
 fn asyncio(py: Python) -> PyResult<Bound<PyAny>> {
